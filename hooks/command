@@ -6,9 +6,14 @@ cNone="\033[00m"
 cRed="\033[01;31m"
 cGreen="\033[01;32m"
 
-function opa-bin() {
-  local OPA_IMAGE="${IMAGE_NAME}:${VERSION}"
+IMAGE_NAME=${BUILDKITE_PLUGIN_TERRAFORM_OPA_IMAGE:-"openpolicyagent/opa"}
+VERSION=${BUILDKITE_PLUGIN_TERRAFORM_OPA_VERSION:-"latest"}
+OPA_IMAGE="${IMAGE_NAME}:${VERSION}"
 
+# Pull the image ahead of time.
+docker pull $OPA_IMAGE --quiet
+
+function opa-bin() {
   docker run --rm -it \
     --mount "type=bind,src=$PWD,dst=/svc" \
     -w /svc \
@@ -19,31 +24,28 @@ function opa-bin() {
 function terraform-opa-run() {
   local DEBUG=${BUILDKITE_PLUGIN_TERRAFORM_OPA_DEBUG:-false}
   local FAIL_STEP=${BUILDKITE_PLUGIN_TERRAFORM_OPA_FAIL_STEP:-false}
-  local IMAGE_NAME=${BUILDKITE_PLUGIN_TERRAFORM_OPA_IMAGE:-"openpolicyagent/opa"}
   local OPA_DIR=${BUILDKITE_PLUGIN_TERRAFORM_OPA_DIR:-"terraform/tests"}
   local POLICY_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_POLICY_FILE:-"${OPA_DIR}/terraform.rego"}
   local RESOURCE_TYPES_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_TYPES_FILE:-"${OPA_DIR}/resource_types.json"}
   local RESOURCE_WEIGHTS_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_WEIGHTS_FILE:-"${OPA_DIR}/resource_weights.json"}
   local TERRAFORM_PLAN=${BUILDKITE_PLUGIN_TERRAFORM_OPA_TERRAFORM_PLAN}
-  local VERSION=${BUILDKITE_PLUGIN_TERRAFORM_OPA_VERSION:-"latest"}
 
   if [[ "${DEBUG}" == true ]]; then
     echo "--- :terraform: :buildkite: :openpolicyagent: Debug on - list local variables."
     echo "FAIL_STEP: ${FAIL_STEP}"
-    echo "IMAGE_NAME: ${IMAGE_NAME}"
     echo "OPA_DIR: ${OPA_DIR}"
+    echo "OPA_IMAGE: ${OPA_IMAGE}"
     echo "POLICY_FILE: ${POLICY_FILE}"
     echo "RESOURCE_TYPES_FILE: ${RESOURCE_TYPES_FILE}"
     echo "RESOURCE_WEIGHTS_FILE: ${RESOURCE_WEIGHTS_FILE}"
     echo "TERRAFORM_PLAN: ${TERRAFORM_PLAN}"
-    echo "VERSION: ${VERSION}"
   fi
 
   echo ""
   echo "+++ :terraform: :buildkite: :openpolicyagent: Evaluating proposed Terraform changes..."
   echo ""
-  echo "${cGreen}Using Open Policy Agent version:"
-  echo "$(opa-bin version)${cNone}"
+  echo "${cGreen}Using Open Policy Agent version:${cNone}"
+  echo "$(opa-bin version)"
   echo ""
 
   OPA_PASS=$(opa-bin eval \
