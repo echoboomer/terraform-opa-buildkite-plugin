@@ -10,7 +10,7 @@ Runs Open Policy Agent against Terraform plans.
 
 The plugin requires a Terraform plan to evaluate. This can be accomplished by exporting a Terraform plan from another step.
 
-Consider using the [Buildkite Terraform Plugin](https://github.com/echoboomer/terraform-buildkite-plugin) along with the [Buildkite Artifacts Plugin](https://github.com/buildkite-plugins/artifacts-buildkite-plugin) to accomplish this. The former exports a `json` version of the Terraform plan automatically. A full example using these options is provided below.
+Consider using the [Buildkite Terraform Plugin](https://github.com/echoboomer/terraform-buildkite-plugin) along with the [Buildkite Artifacts Plugin](https://github.com/buildkite-plugins/artifacts-buildkite-plugin) to accomplish this. The former exports a `json` version of the Terraform plan automatically.
 
 The Terraform plan must be `json` formatted.
 
@@ -72,6 +72,32 @@ steps:
           terraform_plan: tfplan.json
           tests_dir: unit-tests
 ```
+
+You can combine this plugin with the [Buildkite Terraform Plugin](https://github.com/echoboomer/terraform-buildkite-plugin) to run an OPA test inline in the same step as your Terraform plan:
+
+```yml
+steps:
+  - label: ":terraform: Running Terraform"
+    concurrency: 1
+    concurrency_group: tf-repo
+    plugins:
+      - echoboomer/terraform#v1.2.18:
+          apply_master: true
+          init_args:
+            - "-input=false"
+            - "-backend-config=bucket=my_gcp_bucket"
+            - "-backend-config=prefix=my-prefix"
+            - "-backend-config=credentials=sa.json"
+          image: mycustomtfimage
+          skip_apply_no_diff: true
+          version: mytag
+      - echoboomer/terraform-opa#v1.0.0:
+          fail_step: true
+          terraform_plan: tfplan.json
+          tests_dir: "tests"
+```
+
+With the provided configuration in this example, Terraform will run a plan and then immediately use the `tfplan.json` file that is available in the `terraform/` directory to run an OPA evaluation.
 
 ## Configuration
 
