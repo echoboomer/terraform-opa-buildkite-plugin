@@ -1,0 +1,78 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cNone='\033[00m'
+cRed='\033[01;31m'
+cGreen='\033[01;32m'
+
+function opa-bin() {
+  local OPA_IMAGE="${IMAGE_NAME}:${VERSION}"
+
+  docker run --rm -it \
+    --mount "type=bind,src=$PWD,dst=/svc" \
+    -w /svc \
+    $OPA_IMAGE \
+    "${@}"
+}
+
+function terraform-opa-run() {
+  local FAIL_STEP=${BUILDKITE_PLUGIN_TERRAFORM_OPA_FAIL_STEP:-false}
+  local IMAGE_NAME=${BUILDKITE_PLUGIN_TERRAFORM_OPA_IMAGE:-"openpolicyagent/opa"}
+  local OPA_DIR=${BUILDKITE_PLUGIN_TERRAFORM_OPA_DIR:-"terraform/tests"}
+  local POLICY_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_POLICY_FILE:-"${OPA_DIR}/terraform.rego"}
+  local RESOURCE_TYPES_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_TYPES_FILE:-"${OPA_DIR}/resource_types.json"}
+  local RESOURCE_WEIGHTS_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_WEIGHTS_FILE:-"${OPA_DIR}/resource_weights.json"}
+  local TERRAFORM_PLAN=${BUILDKITE_PLUGIN_TERRAFORM_OPA_TERRAFORM_PLAN}
+  local VERSION=${BUILDKITE_PLUGIN_TERRAFORM_OPA_VERSION:-"latest"}
+
+  echo "+++ :terraform: :buildkite: :openpolicyagent: Evaluating proposed Terraform changes..."
+  echo ""
+  echo "${cGreen}Using Open Policy Agent version: $(opa-bin version)${cNone}"
+  echo ""
+
+  OPA_PASS=$(opa-bin eval \
+            --format pretty \
+            --data resource_types:${RESOURCE_TYPES_FILE} \
+            --data resource_weights:${RESOURCE_WEIGHTS_FILE} \
+            --data ${POLICY_FILE} \
+            --input ${TERRAFORM_PLAN} "data.terraform.analysis.authz"
+  )
+
+  OPA_SCORE=$(opa-bin eval \
+            --format pretty \
+            --data resource_types:${RESOURCE_TYPES_FILE} \
+            --data resource_weights:${RESOURCE_WEIGHTS_FILE} \
+            --data ${POLICY_FILE} \
+            --input ${TERRAFORM_PLAN} "data.terraform.analysis.score"
+  )
+
+  OPA_RADIUS=$(opa-bin eval \
+            --format pretty \
+            --data resource_types:${RESOURCE_TYPES_FILE} \
+            --data resource_weights:${RESOURCE_WEIGHTS_FILE} \
+            --data ${POLICY_FILE} \
+            --input ${TERRAFORM_PLAN} "data.terraform.analysis.blast_radius"
+  )
+
+  echo -e "${cGreen}----------------------------------------${cNone}"
+  echo -e "${cGreen}Terraform Policy Evaluation Results:${cNone}"
+  echo "Acceptable Risk Score: ${OPA_RADIUS}"
+  echo "Calculated Risk Score: ${OPA_SCORE}"
+  echo "Changes Compliant: ${OPA_PASS}"
+  echo -e "${cGreen}----------------------------------------${cNone}"
+
+  # Add buildkite-agent meta-data regarding state of check.
+  echo "${OPA_PASS}" | buildkite-agent meta-data set "tf_plan_compliant"
+
+  # Fail the pipeline step entirely if the option is enabled to enforce that behavior.
+  if [[ "${FAIL_STEP}" == true ]]; then
+    echo "${cRed}Terraform plan does not meet the policy requirements.${cNone}"
+    exit 1
+  else
+    echo "${cRed}Terraform plan does not meet the policy requirements, but the option to enforce failure is not enabled.${cNone}"
+    echo "${cRed}Proceed with caution.${cNone}"
+  fi
+}
+
+terraform-opa-run

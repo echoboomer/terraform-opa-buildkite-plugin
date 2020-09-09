@@ -1,0 +1,25 @@
+name: Terraform
+description: Runs Open Policy Agent against Terraform plans.
+author: https://github.com/echoboomer
+requirements:
+  - docker
+configuration:
+  properties:
+    fail_step:
+      type: boolean
+    image:
+      type: string
+    opa_dir:
+      type: string
+    policy_file:
+      type: string
+    resource_types_file:
+      type: string
+    resource_weights_file:
+      type: string
+    terraform_plan:
+      type: string
+    version:
+      type: string
+  required:
+    - terraform_plan
