@@ -31,7 +31,7 @@ function terraform-opa-run() {
   local TERRAFORM_PLAN=${BUILDKITE_PLUGIN_TERRAFORM_OPA_TERRAFORM_PLAN}
 
   if [[ "${DEBUG}" == true ]]; then
-    echo "--- :terraform: :buildkite: :openpolicyagent: Debug on - list local variables."
+    echo "--- :terraform: :buildkite: :openpolicyagent: Debug info..."
     echo "FAIL_STEP: ${FAIL_STEP}"
     echo "OPA_DIR: ${OPA_DIR}"
     echo "OPA_IMAGE: ${OPA_IMAGE}"
@@ -39,12 +39,21 @@ function terraform-opa-run() {
     echo "RESOURCE_TYPES_FILE: ${RESOURCE_TYPES_FILE}"
     echo "RESOURCE_WEIGHTS_FILE: ${RESOURCE_WEIGHTS_FILE}"
     echo "TERRAFORM_PLAN: ${TERRAFORM_PLAN}"
+    echo ""
+    echo "Working directory: $(pwd)"
+    echo ""
+    echo "Directory contents:"
+    ls -al .
+    echo ""
+    echo "OPA directory contents:"
+    ls -al ${OPA_DIR}
+    echo ""
   fi
 
   echo ""
   echo "+++ :terraform: :buildkite: :openpolicyagent: Evaluating proposed Terraform changes..."
   echo ""
-  echo "${cGreen}Using Open Policy Agent version:${cNone}"
+  echo "Using Open Policy Agent version:"
   echo "$(opa-bin version)"
   echo ""
 
