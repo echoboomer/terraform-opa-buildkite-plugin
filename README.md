@@ -75,6 +75,10 @@ steps:
 
 ## Configuration
 
+### `debug` (Not Required, boolean)
+
+Provides some helpful information when attempting to troubleshoot issues with running the plugin. Defaults to `false`.
+
 ### `fail_step` (Not Required, boolean)
 
 If this is provided and set to `true`, the Buildkite pipeline will fail if the provided Terraform plan does not meet the specified policy requirements. Without this option, the plugin only returns output regarding the assessment.

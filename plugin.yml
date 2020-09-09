@@ -5,6 +5,8 @@ requirements:
   - docker
 configuration:
   properties:
+    debug:
+      type: boolean
     fail_step:
       type: boolean
     image:

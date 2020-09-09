@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-cNone='\033[00m'
-cRed='\033[01;31m'
-cGreen='\033[01;32m'
+cNone="\033[00m"
+cRed="\033[01;31m"
+cGreen="\033[01;32m"
 
 function opa-bin() {
   local OPA_IMAGE="${IMAGE_NAME}:${VERSION}"
@@ -17,6 +17,7 @@ function opa-bin() {
 }
 
 function terraform-opa-run() {
+  local DEBUG=${BUILDKITE_PLUGIN_TERRAFORM_OPA_DEBUG:-false}
   local FAIL_STEP=${BUILDKITE_PLUGIN_TERRAFORM_OPA_FAIL_STEP:-false}
   local IMAGE_NAME=${BUILDKITE_PLUGIN_TERRAFORM_OPA_IMAGE:-"openpolicyagent/opa"}
   local OPA_DIR=${BUILDKITE_PLUGIN_TERRAFORM_OPA_DIR:-"terraform/tests"}
@@ -26,9 +27,23 @@ function terraform-opa-run() {
   local TERRAFORM_PLAN=${BUILDKITE_PLUGIN_TERRAFORM_OPA_TERRAFORM_PLAN}
   local VERSION=${BUILDKITE_PLUGIN_TERRAFORM_OPA_VERSION:-"latest"}
 
+  if [[ "${DEBUG}" == true ]]; then
+    echo "--- :terraform: :buildkite: :openpolicyagent: Debug on - list local variables."
+    echo "FAIL_STEP: ${FAIL_STEP}"
+    echo "IMAGE_NAME: ${IMAGE_NAME}"
+    echo "OPA_DIR: ${OPA_DIR}"
+    echo "POLICY_FILE: ${POLICY_FILE}"
+    echo "RESOURCE_TYPES_FILE: ${RESOURCE_TYPES_FILE}"
+    echo "RESOURCE_WEIGHTS_FILE: ${RESOURCE_WEIGHTS_FILE}"
+    echo "TERRAFORM_PLAN: ${TERRAFORM_PLAN}"
+    echo "VERSION: ${VERSION}"
+  fi
+
+  echo ""
   echo "+++ :terraform: :buildkite: :openpolicyagent: Evaluating proposed Terraform changes..."
   echo ""
-  echo "${cGreen}Using Open Policy Agent version: $(opa-bin version)${cNone}"
+  echo "${cGreen}Using Open Policy Agent version:"
+  echo "$(opa-bin version)${cNone}"
   echo ""
 
   OPA_PASS=$(opa-bin eval \
