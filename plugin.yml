@@ -11,8 +11,6 @@ configuration:
       type: boolean
     image:
       type: string
-    opa_dir:
-      type: string
     policy_file:
       type: string
     resource_types_file:
@@ -20,6 +18,8 @@ configuration:
     resource_weights_file:
       type: string
     terraform_plan:
+      type: string
+    tests_dir:
       type: string
     version:
       type: string
