@@ -96,17 +96,15 @@ function terraform-opa-run() {
   echo ""
 
   # Add buildkite-agent meta-data regarding state of check.
-  echo -e "${cGreen}[!] Exporting tf_plan_complient metadata as ${OPA_PASS}...${cNone}"
   echo "${OPA_PASS}" | buildkite-agent meta-data set "tf_plan_compliant"
   echo ""
 
   # Fail the pipeline step entirely if the option is enabled to enforce that behavior.
-  if [[ "${FAIL_STEP}" == true ]]; then
-    echo -e "${cRed}Terraform plan does not meet the policy requirements.${cNone}"
+  if [[ "${FAIL_STEP}" == true && "${OPA_PASS}" == false ]]; then
+    echo -e "${cRed}[!] Terraform plan does not meet the policy requirements.${cNone}"
     exit 1
   else
-    echo -e "${cRed}Terraform plan does not meet the policy requirements, but the option to enforce failure is not enabled.${cNone}"
-    echo -e "${cRed}Proceed with caution.${cNone}"
+    echo -e "${cRed}[!] Terraform plan does not meet the policy requirements, but the option to enforce failure is not enabled.${cNone}"
   fi
 }
 
