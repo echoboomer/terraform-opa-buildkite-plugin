@@ -100,10 +100,10 @@ function terraform-opa-run() {
   echo ""
 
   # Fail the pipeline step entirely if the option is enabled to enforce that behavior.
-  if [[ "${FAIL_STEP}" == true && "${OPA_PASS}" == false ]]; then
+  if [[ "${FAIL_STEP}" == true && "${OPA_PASS}" == "false" ]]; then
     echo -e "${cRed}[!] Terraform plan does not meet the policy requirements.${cNone}"
     exit 1
-  elif [[ "${FAIL_STEP}" == false && "${OPA_PASS}" == false ]]; then
+  elif [[ "${FAIL_STEP}" == false && "${OPA_PASS}" == "false" ]]; then
     echo -e "${cRed}[!] Terraform plan does not meet the policy requirements. Option to fail pipeline step is not enabled. Proceed with caution.${cNone}"
   else
     echo -e "${cGreen}[!] Terraform plan meets the policy requirements!${cNone}"
