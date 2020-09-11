@@ -6,6 +6,7 @@ cNone="\033[00m"
 cRed="\033[01;31m"
 cGreen="\033[01;32m"
 
+BUILDKITE_BRANCH=${BUILDKITE_BRANCH:-}
 IMAGE_NAME=${BUILDKITE_PLUGIN_TERRAFORM_OPA_IMAGE:-"openpolicyagent/opa"}
 VERSION=${BUILDKITE_PLUGIN_TERRAFORM_OPA_VERSION:-"latest"}
 OPA_IMAGE="${IMAGE_NAME}:${VERSION}"
@@ -28,6 +29,7 @@ function terraform-opa-run() {
   local POLICY_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_POLICY_FILE:-"${TESTS_DIR}/terraform.rego"}
   local RESOURCE_TYPES_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_TYPES_FILE:-"${TESTS_DIR}/resource_types.json"}
   local RESOURCE_WEIGHTS_FILE=${BUILDKITE_PLUGIN_TERRAFORM_OPA_RESOURCE_WEIGHTS_FILE:-"${TESTS_DIR}/resource_weights.json"}
+  local SKIP_MASTER_BRANCH=${BUILDKITE_PLUGIN_TERRAFORM_OPA_SKIP_MASTER_BRANCH:-false}
   local TERRAFORM_PLAN=${BUILDKITE_PLUGIN_TERRAFORM_OPA_TERRAFORM_PLAN}
 
   if [[ "${DEBUG}" == true ]]; then
@@ -112,4 +114,8 @@ function terraform-opa-run() {
   echo ""
 }
 
-terraform-opa-run
+if [[ "${SKIP_MASTER_BRANCH}" == true && "${BUILDKITE_BRANCH}" == "master" ]]; then
+  exit 0
+else
+  terraform-opa-run
+fi

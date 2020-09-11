@@ -113,6 +113,10 @@ If this is provided and set to `true`, the Buildkite pipeline will fail if the p
 
 The Docker image to run for Open Policy Agent. Defaults to `openpolicyagent/opa`. The `version` option specified below correlates with the `tag` option.
 
+### `skip_master_branch` (Not Required, boolean)
+
+If this is provided and set to `true`, the plugin looks for `BUILDKITE_BRANCH` and won't run if the value is `master`. This is useful is the plugin runs alongside others in one step using the example above.
+
 ### `tests_dir` (Not Required, string)
 
 The path of the directory in your Terraform repository containing the required files for running Open Policy Agent assessments against Terraform code. Since Buildkite agents typically operate from the root of a repository, this is in relation to that top level path. This defaults to `./terraform/tests`. You may override this as long as your files are available in the given location.

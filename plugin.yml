@@ -12,6 +12,8 @@ configuration:
       type: boolean
     image:
       type: string
+    skip_master_branch:
+      type: boolean
     policy_file:
       type: string
     resource_types_file:
