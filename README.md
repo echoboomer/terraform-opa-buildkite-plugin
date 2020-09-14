@@ -54,7 +54,7 @@ Add the following to your `pipeline.yml`:
 steps:
   - label: "Terraform Policy Evaluation"
     plugins:
-      - echoboomer/terraform-opa#v1.0.0:
+      - echoboomer/terraform-opa#v1.0.8:
           terraform_plan: tfplan.json
 ```
 
@@ -64,7 +64,7 @@ You can customize other options based on your preferred configuration:
 steps:
   - label: "Terraform Policy Evaluation"
     plugins:
-      - echoboomer/terraform-opa#v1.0.0:
+      - echoboomer/terraform-opa#v1.0.8:
           fail_step: true
           policy_file: tf-this.rego
           resource_types_file: custom-types.json
@@ -91,7 +91,7 @@ steps:
           image: mycustomtfimage
           skip_apply_no_diff: true
           version: mytag
-      - echoboomer/terraform-opa#v1.0.0:
+      - echoboomer/terraform-opa#v1.0.8:
           fail_step: true
           terraform_plan: tfplan.json
           tests_dir: "tests"
